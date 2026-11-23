@@ -80,8 +80,8 @@ def adicionar_cidade(grafo, cidade):
     grafo.setdefault(cidade, [])
 
 
-def adicionar_estrada(grafo, cidade_a, cidade_b, distancia, mao_dupla=True):
-    """Inclui uma aresta ponderada entre duas cidades, validando os dados."""
+def adicionar_estrada(grafo, cidade_a, cidade_b, distancia):
+    """Inclui uma estrada de mão dupla entre duas cidades, validando os dados."""
     if cidade_a == cidade_b:
         raise ValueError(f"Uma estrada não pode ligar '{cidade_a}' a ela mesma.")
     numero = isinstance(distancia, (int, float)) and not isinstance(distancia, bool)
@@ -93,13 +93,16 @@ def adicionar_estrada(grafo, cidade_a, cidade_b, distancia, mao_dupla=True):
         if cidade not in grafo:
             raise KeyError(f"Cidade '{cidade}' não existe no mapa.")
 
+    # Mão dupla: a estrada entra na lista de vizinhos das duas cidades.
     grafo[cidade_a].append((cidade_b, distancia))
-    if mao_dupla:
-        grafo[cidade_b].append((cidade_a, distancia))
+    grafo[cidade_b].append((cidade_a, distancia))
 
 
 def montar_mapa():
     """Constrói o grafo do cenário padrão a partir de CIDADES e ESTRADAS."""
+    for cidade in CIDADES:
+        if not isinstance(cidade, str) or not cidade.strip():
+            raise ValueError(f"Cidade {cidade!r} deve ser um nome entre aspas.")
     grafo = criar_grafo(CIDADES)
     for estrada in ESTRADAS:
         if len(estrada) != 3:
@@ -109,13 +112,20 @@ def montar_mapa():
     return grafo
 
 
+def largura_nomes(cidades):
+    """Largura da coluna de nomes, para alinhar a saída mesmo com nomes longos."""
+    return max([10] + [len(cidade) for cidade in cidades])
+
+
 def exibir_lista_adjacencia(grafo):
+    """Mostra cada cidade com seus vizinhos e as distâncias."""
+    largura = largura_nomes(grafo)
     print("=" * 64)
     print(" MAPA (LISTA DE ADJACÊNCIA)  -  cidade -> [(vizinho, km), ...]")
     print("=" * 64)
     for numero, (cidade, vizinhos) in enumerate(grafo.items(), start=1):
         texto = ", ".join(f"{v} ({formatar_km(d)})" for v, d in vizinhos) or "(sem ligações)"
-        print(f"  {numero}. {cidade:<10} -> {texto}")
+        print(f"  {numero}. {cidade:<{largura}} -> {texto}")
     total_arestas = sum(len(v) for v in grafo.values()) // 2
     print(f"\n  {len(grafo)} cidades, {total_arestas} estradas (mão dupla)")
     print("=" * 64)
@@ -239,15 +249,18 @@ def ler_distancia(texto):
 
 
 def formatar_km(valor):
+    """Formata uma distância em km, sem casas decimais desnecessárias."""
     # 12 algarismos significativos: mostra 1234567 km por inteiro e 0.1 + 0.2 como 0.3 km
     return f"{valor:.12g} km"
 
 
 def formatar_trechos(quantidade):
+    """Escreve a quantidade de trechos no singular ou no plural."""
     return "1 trecho" if quantidade == 1 else f"{quantidade} trechos"
 
 
 def exibir_resultado(grafo, origem, destino):
+    """Calcula e mostra o caminho mínimo, os trechos e a distância total."""
     print(f"\nOrigem : {origem}\nDestino: {destino}")
     if origem == destino:
         print("Origem e destino são a mesma cidade: distância 0 km.")
@@ -261,14 +274,16 @@ def exibir_resultado(grafo, origem, destino):
     # Detalha cada trecho, consultando o peso de cada aresta na lista de adjacência.
     print(f"Caminho mínimo: {' -> '.join(caminho)}")
     print("Trechos:")
+    largura = largura_nomes(caminho)
     for atual, proxima in zip(caminho, caminho[1:]):
         # Se houver mais de uma estrada entre as duas cidades, Dijkstra usa a mais curta.
         peso = min(d for v, d in grafo[atual] if v == proxima)
-        print(f"  {atual:<10} -> {proxima:<10} {formatar_km(peso):>7}")
+        print(f"  {atual:<{largura}} -> {proxima:<{largura}} {formatar_km(peso):>7}")
     print(f"Distância total: {formatar_km(distancia)}  ({formatar_trechos(len(caminho) - 1)})")
 
 
 def menu_interativo(grafo):
+    """Pede origem e destino ao usuário até que ele decida sair."""
     # Se a entrada vier de um arquivo ou de outro programa (e não do teclado), lê como UTF-8.
     if not sys.stdin.isatty() and hasattr(sys.stdin, "reconfigure"):
         sys.stdin.reconfigure(encoding="utf-8", errors="replace")
@@ -294,6 +309,7 @@ def menu_interativo(grafo):
 
 
 def executar_demo(grafo):
+    """Executa casos prontos, inclusive sem caminho e com entradas inválidas."""
     exibir_lista_adjacencia(grafo)
     casos = [
         ("Alvorada", "Esmeralda"),   # menor caminho tem MAIS trechos que a rota direta
@@ -314,6 +330,7 @@ def executar_demo(grafo):
 
 
 def main():
+    """Lê as opções da linha de comando, monta o mapa e executa a ação pedida."""
     parser = argparse.ArgumentParser(description="Caminho mínimo com Dijkstra em um mapa fictício.")
     parser.add_argument("--origem", help="nome ou número da cidade de origem")
     parser.add_argument("--destino", help="nome ou número da cidade de destino")
@@ -331,6 +348,9 @@ def main():
         grafo = montar_mapa()
     except (KeyError, ValueError) as erro:
         print(f"Erro nas listas CIDADES/ESTRADAS: {erro.args[0]}")
+        return 1
+    except TypeError:
+        print('Erro nas listas CIDADES/ESTRADAS: cada estrada deve ter a forma ("Cidade A", "Cidade B", distância).')
         return 1
 
     # Ligações extras informadas na linha de comando.
