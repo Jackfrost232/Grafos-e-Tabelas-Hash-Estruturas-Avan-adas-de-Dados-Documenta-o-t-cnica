@@ -1,0 +1,54 @@
+﻿================================================================
+ MAPA (LISTA DE ADJACÊNCIA)  -  cidade -> [(vizinho, km), ...]
+================================================================
+  1. Alvorada   -> Bosque (7 km), Cascata (9 km), Floresta (14 km)
+  2. Bosque     -> Alvorada (7 km), Cascata (10 km), Dunas (15 km)
+  3. Cascata    -> Alvorada (9 km), Bosque (10 km), Dunas (11 km), Floresta (2 km)
+  4. Dunas      -> Bosque (15 km), Cascata (11 km), Esmeralda (6 km), Girassol (12 km)
+  5. Esmeralda  -> Dunas (6 km), Floresta (9 km), Girassol (4 km)
+  6. Floresta   -> Alvorada (14 km), Cascata (2 km), Esmeralda (9 km)
+  7. Girassol   -> Dunas (12 km), Esmeralda (4 km)
+  8. Horizonte  -> (sem ligações)
+
+  8 cidades, 11 estradas (mão dupla)
+================================================================
+----------------------------------------------------------------
+
+Origem : Alvorada
+Destino: Esmeralda
+Caminho mínimo: Alvorada -> Cascata -> Floresta -> Esmeralda
+Trechos:
+  Alvorada   -> Cascata       9 km
+  Cascata    -> Floresta      2 km
+  Floresta   -> Esmeralda     9 km
+Distância total: 20 km  (3 trechos)
+----------------------------------------------------------------
+
+Origem : Bosque
+Destino: Girassol
+Caminho mínimo: Bosque -> Cascata -> Floresta -> Esmeralda -> Girassol
+Trechos:
+  Bosque     -> Cascata      10 km
+  Cascata    -> Floresta      2 km
+  Floresta   -> Esmeralda     9 km
+  Esmeralda  -> Girassol      4 km
+Distância total: 25 km  (4 trechos)
+----------------------------------------------------------------
+
+Origem : Alvorada
+Destino: Dunas
+Caminho mínimo: Alvorada -> Cascata -> Dunas
+Trechos:
+  Alvorada   -> Cascata       9 km
+  Cascata    -> Dunas        11 km
+Distância total: 20 km  (2 trechos)
+----------------------------------------------------------------
+
+Origem : Alvorada
+Destino: Horizonte
+Não existe caminho entre Alvorada e Horizonte.
+----------------------------------------------------------------
+
+Tratamento de entrada inválida:
+  Erro: Cidade 'Atlantida' não existe no mapa.
+  Erro: Número de cidade inválido: 99 (use 1 a 8).

@@ -1,0 +1,26 @@
+﻿Estrada adicionada: Horizonte <-> Girassol (8 km)
+================================================================
+ MAPA (LISTA DE ADJACÊNCIA)  -  cidade -> [(vizinho, km), ...]
+================================================================
+  1. Alvorada   -> Bosque (7 km), Cascata (9 km), Floresta (14 km)
+  2. Bosque     -> Alvorada (7 km), Cascata (10 km), Dunas (15 km)
+  3. Cascata    -> Alvorada (9 km), Bosque (10 km), Dunas (11 km), Floresta (2 km)
+  4. Dunas      -> Bosque (15 km), Cascata (11 km), Esmeralda (6 km), Girassol (12 km)
+  5. Esmeralda  -> Dunas (6 km), Floresta (9 km), Girassol (4 km)
+  6. Floresta   -> Alvorada (14 km), Cascata (2 km), Esmeralda (9 km)
+  7. Girassol   -> Dunas (12 km), Esmeralda (4 km), Horizonte (8 km)
+  8. Horizonte  -> Girassol (8 km)
+
+  8 cidades, 12 estradas (mão dupla)
+================================================================
+
+Origem : Alvorada
+Destino: Horizonte
+Caminho mínimo: Alvorada -> Cascata -> Floresta -> Esmeralda -> Girassol -> Horizonte
+Trechos:
+  Alvorada   -> Cascata       9 km
+  Cascata    -> Floresta      2 km
+  Floresta   -> Esmeralda     9 km
+  Esmeralda  -> Girassol      4 km
+  Girassol   -> Horizonte     8 km
+Distância total: 32 km  (5 trechos)
