@@ -18,6 +18,7 @@ Uso:
 import argparse
 import heapq
 import math
+import re
 import sys
 
 # Garante acentuação correta no terminal do Windows.
@@ -52,6 +53,8 @@ ESTRADAS = [
     ("Esmeralda", "Girassol", 4),
 ]
 
+DISTANCIA_MAXIMA = 1_000_000_000   # km; evita números grandes demais para calcular e exibir
+
 
 # ---------------------------------------------------------------------------
 # 2. Representação do grafo: lista de adjacência
@@ -81,8 +84,11 @@ def adicionar_estrada(grafo, cidade_a, cidade_b, distancia, mao_dupla=True):
     """Inclui uma aresta ponderada entre duas cidades, validando os dados."""
     if cidade_a == cidade_b:
         raise ValueError(f"Uma estrada não pode ligar '{cidade_a}' a ela mesma.")
-    if not math.isfinite(distancia) or distancia <= 0:   # rejeita também nan e infinito
-        raise ValueError(f"Distância inválida ({distancia}) entre {cidade_a} e {cidade_b}: deve ser um número positivo.")
+    numero = isinstance(distancia, (int, float)) and not isinstance(distancia, bool)
+    # A comparação encadeada também rejeita nan e infinito.
+    if not numero or not 0 < distancia <= DISTANCIA_MAXIMA:
+        raise ValueError(f"Distância inválida ({distancia!r}) entre {cidade_a} e {cidade_b}: "
+                         f"deve ser um número positivo de até {DISTANCIA_MAXIMA} km.")
     for cidade in (cidade_a, cidade_b):
         if cidade not in grafo:
             raise KeyError(f"Cidade '{cidade}' não existe no mapa.")
@@ -95,7 +101,10 @@ def adicionar_estrada(grafo, cidade_a, cidade_b, distancia, mao_dupla=True):
 def montar_mapa():
     """Constrói o grafo do cenário padrão a partir de CIDADES e ESTRADAS."""
     grafo = criar_grafo(CIDADES)
-    for cidade_a, cidade_b, distancia in ESTRADAS:
+    for estrada in ESTRADAS:
+        if len(estrada) != 3:
+            raise ValueError(f"Estrada {estrada!r} deve ter duas cidades e uma distância.")
+        cidade_a, cidade_b, distancia = estrada
         adicionar_estrada(grafo, cidade_a, cidade_b, distancia)
     return grafo
 
@@ -193,10 +202,11 @@ def resolver_nome_cidade(grafo, entrada):
     entrada = limpar_entrada(entrada)
     cidades = list(grafo)
     if entrada.isdecimal():   # isdecimal, e não isdigit: "²" é dígito, mas int("²") falha
-        indice = int(entrada) - 1
+        # Números com mais de 9 algarismos nunca são válidos e nem precisam ser convertidos.
+        indice = int(entrada) - 1 if len(entrada) <= 9 else -1
         if 0 <= indice < len(cidades):
             return cidades[indice]
-        raise KeyError(f"Número de cidade inválido: {entrada} (use 1 a {len(cidades)}).")
+        raise KeyError(f"Número de cidade inválido: {entrada[:20]} (use 1 a {len(cidades)}).")
     for cidade in cidades:
         if cidade.lower() == entrada.lower():
             return cidade
@@ -215,6 +225,17 @@ def resolver_ou_criar_cidade(grafo, entrada):
             raise ValueError(erro.args[0]) from None
     adicionar_cidade(grafo, entrada)
     return entrada
+
+
+def ler_distancia(texto):
+    """Converte "8", "2,5" ou "2.5" em número; recusa o que não for um número claro."""
+    texto = texto.strip()
+    if not re.fullmatch(r"[+-]?[0-9]+([.,][0-9]+)?", texto):
+        raise ValueError(f"distância '{texto}' não é um número.")
+    if re.fullmatch(r"[+-]?[1-9][0-9]{0,2}[.,][0-9]{3}", texto):
+        raise ValueError(f"distância '{texto}' é ambígua (milhar ou decimal?): escreva, por exemplo, 1000 ou 1,5.")
+    distancia = float(texto.replace(",", "."))
+    return int(distancia) if distancia.is_integer() else distancia   # "8 km" em vez de "8.0 km"
 
 
 def formatar_km(valor):
@@ -248,6 +269,9 @@ def exibir_resultado(grafo, origem, destino):
 
 
 def menu_interativo(grafo):
+    # Se a entrada vier de um arquivo ou de outro programa (e não do teclado), lê como UTF-8.
+    if not sys.stdin.isatty() and hasattr(sys.stdin, "reconfigure"):
+        sys.stdin.reconfigure(encoding="utf-8", errors="replace")
     exibir_lista_adjacencia(grafo)
     print("Digite o nome ou o número da cidade. Deixe em branco (ou 'sair') para encerrar.")
     while True:
@@ -296,20 +320,24 @@ def main():
     parser.add_argument("--demo", action="store_true", help="executa casos de demonstração")
     parser.add_argument("--conexao", nargs=3, action="append", metavar=("CIDADE_A", "CIDADE_B", "KM"),
                         help="adiciona uma estrada (pode repetir); cidades novas são criadas")
-    args = parser.parse_args()
+    # "-0,5" vira "-0.5": com vírgula, o argparse o confundiria com o nome de uma opção.
+    args = parser.parse_args([re.sub(r"^(-[0-9]+),([0-9]+)$", r"\1.\2", a) for a in sys.argv[1:]])
 
-    grafo = montar_mapa()
+    if args.demo and (args.origem is not None or args.destino is not None):
+        print("Erro: --demo usa casos prontos; não combine com --origem e --destino.")
+        return 1
+
+    try:
+        grafo = montar_mapa()
+    except (KeyError, ValueError) as erro:
+        print(f"Erro nas listas CIDADES/ESTRADAS: {erro.args[0]}")
+        return 1
 
     # Ligações extras informadas na linha de comando.
     for cidade_a, cidade_b, km in args.conexao or []:
+        existentes = set(grafo)
         try:
-            distancia = float(km.replace(",", "."))   # aceita 2,5 ou 2.5
-            if distancia.is_integer():
-                distancia = int(distancia)   # mostra "8 km" em vez de "8.0 km"
-        except ValueError:
-            print(f"Erro ao adicionar estrada: distância '{km}' não é um número.")
-            return 1
-        try:
+            distancia = ler_distancia(km)
             cidade_a = resolver_ou_criar_cidade(grafo, cidade_a)
             cidade_b = resolver_ou_criar_cidade(grafo, cidade_b)
             adicionar_estrada(grafo, cidade_a, cidade_b, distancia)
@@ -317,14 +345,17 @@ def main():
         except ValueError as erro:
             print(f"Erro ao adicionar estrada: {erro.args[0]}")
             return 1
+        for cidade in (cidade_a, cidade_b):
+            if cidade not in existentes:
+                print(f"Aviso: a cidade '{cidade}' não existia e foi criada. Confira se o nome está certo.")
 
     if args.demo:
         executar_demo(grafo)
         return 0
 
-    if args.origem or args.destino:
+    if args.origem is not None or args.destino is not None:
         if not (args.origem and args.destino):
-            print("Erro: informe --origem e --destino juntos.")
+            print("Erro: informe --origem e --destino juntos, sem deixar nenhum vazio.")
             return 1
         try:
             origem = resolver_nome_cidade(grafo, args.origem)
