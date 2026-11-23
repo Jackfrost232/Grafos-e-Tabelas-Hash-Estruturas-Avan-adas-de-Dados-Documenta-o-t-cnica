@@ -81,8 +81,8 @@ def adicionar_estrada(grafo, cidade_a, cidade_b, distancia, mao_dupla=True):
     """Inclui uma aresta ponderada entre duas cidades, validando os dados."""
     if cidade_a == cidade_b:
         raise ValueError(f"Uma estrada não pode ligar '{cidade_a}' a ela mesma.")
-    if distancia <= 0:
-        raise ValueError(f"Distância inválida ({distancia}) entre {cidade_a} e {cidade_b}: deve ser positiva.")
+    if not math.isfinite(distancia) or distancia <= 0:   # rejeita também nan e infinito
+        raise ValueError(f"Distância inválida ({distancia}) entre {cidade_a} e {cidade_b}: deve ser um número positivo.")
     for cidade in (cidade_a, cidade_b):
         if cidade not in grafo:
             raise KeyError(f"Cidade '{cidade}' não existe no mapa.")
@@ -217,7 +217,8 @@ def exibir_resultado(grafo, origem, destino):
     print(f"Caminho mínimo: {' -> '.join(caminho)}")
     print("Trechos:")
     for atual, proxima in zip(caminho, caminho[1:]):
-        peso = next(d for v, d in grafo[atual] if v == proxima)
+        # Se houver mais de uma estrada entre as duas cidades, Dijkstra usa a mais curta.
+        peso = min(d for v, d in grafo[atual] if v == proxima)
         print(f"  {atual:<10} -> {proxima:<10} {formatar_km(peso):>7}")
     print(f"Distância total: {formatar_km(distancia)}  ({len(caminho) - 1} trechos)")
 
