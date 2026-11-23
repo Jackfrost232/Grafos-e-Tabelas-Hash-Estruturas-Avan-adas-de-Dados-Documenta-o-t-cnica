@@ -36,7 +36,7 @@ ted-02-grafos-hash/
 
 ## Parte 1 – Tabela Hash: contagem de frequências
 
-O programa lê um texto, normaliza as palavras (minúsculas, sem pontuação e sem números)
+O programa lê um texto, normaliza as palavras (minúsculas, sem pontuação, números ou símbolos como º e ²)
 e conta as ocorrências em um `dict` do Python, que é uma tabela hash. Depois lista
 todas as palavras com suas frequências e mostra o ranking das mais frequentes.
 
@@ -110,8 +110,8 @@ python grafo_dijkstra.py --conexao Horizonte Girassol 8 --origem Alvorada --dest
 | Opção | O que faz |
 |---|---|
 | `--origem X --destino Y` | calcula o caminho mínimo (aceita nome ou número; maiúsculas não importam) |
-| `--demo` | roda vários casos, inclusive "sem caminho" e entradas inválidas |
-| `--conexao A B KM` | adiciona uma estrada sem editar o código (aceita nome ou número, e `2,5` ou `2.5`; pode repetir; cidades novas são criadas) |
+| `--demo` | roda vários casos, inclusive "sem caminho" e entradas inválidas (não combina com `--origem`/`--destino`) |
+| `--conexao A B KM` | adiciona uma estrada sem editar o código (aceita nome ou número, e `2,5` ou `2.5`; pode repetir; cidades novas são criadas, com aviso) |
 
 Para mudar o mapa de forma permanente, edite as listas `CIDADES` e `ESTRADAS` no início
 de `grafo_dijkstra.py`.
@@ -134,7 +134,8 @@ estradas e não a quantidade de conexões.
 - Origem ou destino inexistente, ou número fora da faixa: mensagem de erro com a lista de cidades.
 - Origem igual ao destino: distância 0.
 - Destino inalcançável: "Não existe caminho entre X e Y".
-- Estrada com distância zero, negativa ou não numérica, ou ligando uma cidade a ela mesma: rejeitada.
+- Estrada com distância zero, negativa, não numérica ou ambígua (`1.000`), ou ligando uma cidade a ela mesma: rejeitada.
+- Engano ao editar `CIDADES` ou `ESTRADAS`: mensagem indicando o problema.
 - Na Parte 1: arquivo inexistente ou que não é texto, texto sem palavras e `--top` inválido.
 
 ## Evidências de execução
