@@ -32,7 +32,7 @@ ted-02-grafos-hash/
 
 - **Python 3.8 ou superior** (testado no Python 3.11).
 - Nenhuma biblioteca externa: são usados apenas módulos da biblioteca padrão
-  (`re`, `argparse`, `pathlib`, `unicodedata`, `heapq`, `math`, `sys`). Não é preciso `pip install`.
+  (`re`, `argparse`, `pathlib`, `unicodedata`, `heapq`, `math`, `decimal`, `sys`). Não é preciso `pip install`.
 
 ## Como obter e executar
 
@@ -45,6 +45,13 @@ cd ted-02-grafos-hash
 ```
 
 Os comandos abaixo devem ser executados dentro dessa pasta.
+
+Na tela, os acentos aparecem corretamente. Para salvar a saída em arquivo com `>` no PowerShell,
+execute antes o comando abaixo, para o PowerShell ler a saída como UTF-8:
+
+```powershell
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
+```
 
 ## Parte 1 – Tabela Hash: contagem de frequências
 
