@@ -4,36 +4,46 @@
 <meta charset="utf-8">
 <title>TED 02 – Documentação Técnica</title>
 <style>
-  @page { size: A4; margin: 18mm 16mm; }
-  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #1d1d1f; }
-  h1 { font-size: 18pt; margin: 0 0 4px; }
-  h2 { font-size: 13pt; margin: 20px 0 6px; border-bottom: 1.5px solid #2b5797; padding-bottom: 2px; color: #2b5797; }
-  h3 { font-size: 11pt; margin: 14px 0 4px; }
-  .sub { color: #555; margin-bottom: 14px; }
-  code, pre { font-family: Consolas, monospace; font-size: 9pt; }
-  code { background: #f0f2f5; padding: 0 3px; border-radius: 3px; }
-  pre { background: #f5f6f8; border: 1px solid #dde1e6; border-radius: 4px; padding: 8px 10px; white-space: pre-wrap; margin: 6px 0; }
-  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 9.5pt; }
-  th, td { border: 1px solid #c9ced6; padding: 4px 7px; text-align: left; vertical-align: top; }
-  th { background: #e8edf5; }
-  .fig { text-align: center; margin: 8px 0; }
-  .fig small { color: #555; }
-  .nb { page-break-inside: avoid; }
-  ul { margin: 4px 0 8px 18px; padding: 0; }
-  li { margin: 2px 0; }
+  /* Página sem margem no topo: o banner fica no <thead>, que se repete em toda página impressa. */
+  @page { size: A4; margin: 0 0 22mm 0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.6; color: #000; background: #fff; }
+  .folha { width: 100%; max-width: 210mm; margin: 0 auto; border-collapse: collapse; }
+  .folha > thead > tr > td { padding: 1mm 0 3mm; border: 0; }
+  .folha > tbody > tr > td { padding: 0 25.4mm; border: 0; }
+  .banner { display: block; width: 100%; }
+  h1 { font-size: 12pt; text-align: center; text-transform: uppercase; margin: 0 0 6pt; line-height: 1.4; }
+  h2, h3 { font-size: 12pt; margin: 12pt 0 4pt; line-height: 1.4; break-after: avoid; }
+  .id { margin: 0 0 3pt; line-height: 1.4; }
+  p { margin: 0 0 6pt; text-align: justify; text-indent: 12.5mm; orphans: 2; widows: 2; }
+  .id { text-indent: 0; text-align: left; }
+  ol, ul { margin: 0 0 6pt; padding-left: 12.5mm; }
+  li { margin: 0 0 4pt; text-align: justify; }
+  code, pre { font-family: Consolas, "Courier New", monospace; font-size: 10pt; }
+  pre { border: 1px solid #7f7f7f; padding: 6pt 8pt; margin: 4pt 0 8pt; line-height: 1.35; white-space: pre-wrap; text-align: left; break-inside: avoid; }
+  table.nb { border-collapse: collapse; width: 100%; margin: 4pt 0 10pt; line-height: 1.2; }
+  table.nb th, table.nb td { border: 1px solid #7f7f7f; padding: 4pt 5pt; text-align: left; vertical-align: middle; }
+  table.nb th { background: #d9d9d9; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table.nb tr { break-inside: avoid; }
+  .nb { break-inside: avoid; }
+  .fig { text-align: center; margin: 6pt 0 8pt; line-height: 1.3; }
+  .fig svg { max-width: 100%; }
+  .fig small { font-size: 10pt; }
 </style>
 </head>
 <body>
+<table class="folha">
+<thead><tr><td><img class="banner" src="banner.png" alt="UNIBALSAS Centro Universitário"></td></tr></thead>
+<tbody><tr><td>
 
-<h1>TED 02 – Grafos e Tabelas Hash</h1>
-<div class="sub">
-  Estruturas Avançadas de Dados · Documentação técnica<br>
-  Aluno: <b>Pedro Paulo Teixeira de Araújo</b> (trabalho individual) · Entrega: 25/11/2026
-</div>
+<h1>Documentação técnica – TED 02 (Grafos e Tabelas Hash)</h1>
+<p class="id"><b>Autores:</b> Pedro Paulo Teixeira de Araújo e Rafael Pontara</p>
+<p class="id"><b>Disciplina:</b> Estruturas Avançadas de Dados (linguagem: Python)</p>
+<p class="id"><b>Entrega:</b> 25/11/2026</p>
 
 <h2>1. Problemas resolvidos</h2>
 <p><b>Parte 1 – Contagem de frequências.</b> Dado um texto extenso, descobrir quantas vezes cada palavra
-aparece e quais são as mais frequentes. O texto de teste (<code>dados/texto_exemplo.txt</code>) tem
+aparece e quais são as mais frequentes. O texto de teste (<code>dados/<wbr>texto_exemplo.txt</code>) tem
 <b>908 palavras</b> e <b>361 palavras distintas</b>.</p>
 <p><b>Parte 2 – Caminho mínimo.</b> Em um mapa fictício com 8 cidades ligadas por estradas de comprimentos
 diferentes, encontrar a rota de <i>menor distância total</i> entre duas cidades, mostrar a sequência de
@@ -87,8 +97,8 @@ termos que indicam o assunto do texto.</p>
 Os pesos são distâncias positivas em km. <i>Horizonte</i> não tem ligações, para testar o caso sem caminho.</p>
 
 <div class="fig nb">
-<svg viewBox="0 0 640 410" width="560" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="13">
-  <g stroke="#9aa3ad" stroke-width="2">
+<svg viewBox="0 32 660 366" width="500" xmlns="http://www.w3.org/2000/svg" font-family="Times New Roman, serif" font-size="13">
+  <g stroke="#7f7f7f" stroke-width="2">
     <line x1="70" y1="200" x2="210" y2="70"/>
     <line x1="210" y1="70" x2="230" y2="200"/>
     <line x1="210" y1="70" x2="400" y2="90"/>
@@ -97,12 +107,12 @@ Os pesos são distâncias positivas em km. <i>Horizonte</i> não tem ligações,
     <line x1="400" y1="90" x2="570" y2="200"/>
     <line x1="70" y1="200" x2="210" y2="330"/>
   </g>
-  <g stroke="#d9480f" stroke-width="4">
+  <g stroke="#7a1f1f" stroke-width="4">
     <line x1="70" y1="200" x2="230" y2="200"/>
     <line x1="230" y1="200" x2="210" y2="330"/>
     <line x1="210" y1="330" x2="420" y2="300"/>
   </g>
-  <line x1="420" y1="300" x2="570" y2="200" stroke="#9aa3ad" stroke-width="2"/>
+  <line x1="420" y1="300" x2="570" y2="200" stroke="#7f7f7f" stroke-width="2"/>
   <g fill="#fff" stroke="none">
     <rect x="127" y="122" width="22" height="18"/><rect x="139" y="191" width="22" height="18"/>
     <rect x="126" y="256" width="26" height="18"/><rect x="209" y="126" width="26" height="18"/>
@@ -112,25 +122,25 @@ Os pesos são distâncias positivas em km. <i>Horizonte</i> não tem ligações,
     <rect x="484" y="241" width="22" height="18"/>
   </g>
   <g fill="#333" text-anchor="middle" font-weight="600">
-    <text x="138" y="136">7</text><text x="150" y="205" fill="#d9480f">9</text>
+    <text x="138" y="136">7</text><text x="150" y="205" fill="#7a1f1f">9</text>
     <text x="139" y="270">14</text><text x="222" y="140">10</text>
     <text x="305" y="85">15</text><text x="315" y="150">11</text>
-    <text x="221" y="270" fill="#d9480f">2</text><text x="410" y="200">6</text>
-    <text x="484" y="150">12</text><text x="315" y="320" fill="#d9480f">9</text>
+    <text x="221" y="270" fill="#7a1f1f">2</text><text x="410" y="200">6</text>
+    <text x="484" y="150">12</text><text x="315" y="320" fill="#7a1f1f">9</text>
     <text x="495" y="255">4</text>
   </g>
-  <g fill="#e8edf5" stroke="#2b5797" stroke-width="2">
+  <g fill="#d9d9d9" stroke="#000" stroke-width="2">
     <circle cx="70" cy="200" r="9"/><circle cx="210" cy="70" r="9"/><circle cx="230" cy="200" r="9"/>
     <circle cx="210" cy="330" r="9"/><circle cx="400" cy="90" r="9"/><circle cx="420" cy="300" r="9"/>
     <circle cx="570" cy="200" r="9"/><circle cx="570" cy="360" r="9" stroke-dasharray="3 2"/>
   </g>
-  <g fill="#1d1d1f" font-weight="600">
-    <text x="20" y="185">Alvorada</text><text x="182" y="50">Bosque</text><text x="242" y="196">Cascata</text>
+  <g fill="#000" font-weight="600">
+    <text x="20" y="185">Alvorada</text><text x="182" y="50">Bosque</text><text x="244" y="218">Cascata</text>
     <text x="175" y="358">Floresta</text><text x="388" y="70">Dunas</text><text x="400" y="330">Esmeralda</text>
     <text x="585" y="205">Girassol</text><text x="545" y="390">Horizonte</text>
   </g>
 </svg><br>
-<small>Figura 1 – Mapa fictício. Em laranja, o caminho mínimo Alvorada → Esmeralda (20 km).</small>
+<small>Figura 1 – Mapa fictício. Em vermelho, o caminho mínimo Alvorada → Esmeralda (20 km).</small>
 </div>
 
 <h3>3.1 Lista de adjacência</h3>
@@ -208,7 +218,7 @@ cidades, porque não depende de uma matriz V × V.</p>
       otimizado, e o foco do trabalho fica na modelagem e na análise. O funcionamento interno (hash, colisões,
       redimensionamento) está explicado na seção 2.2.</li>
   <li><b>Normalização com acentos:</b> uma regex como <code>[a-z]+</code> quebraria "distância" em "dist" e "ncia".
-      Por isso usei <code>[^\W\d_]+</code>, que reconhece letras Unicode.</li>
+      Por isso usamos <code>[^\W\d_]+</code>, que reconhece letras Unicode.</li>
   <li><b>Empates no ranking:</b> sem um critério de desempate, a ordem poderia variar entre execuções. Desempatar em ordem
       alfabética deixa a saída reprodutível.</li>
   <li><b>Dijkstra implementado à mão</b> com <code>heapq</code>, sem bibliotecas de grafos, para deixar visíveis o
@@ -222,9 +232,11 @@ cidades, porque não depende de uma matriz V × V.</p>
   <li><b>Validação de entradas:</b> pesos zero, negativos ou não numéricos e estradas de uma cidade para ela mesma são
       rejeitados, porque o Dijkstra exige pesos não negativos. Cidades inexistentes, arquivos ausentes e textos sem
       palavras geram mensagens claras em vez de erros do Python.</li>
-  <li><b>Acentuação no terminal do Windows:</b> os dois programas chamam <code>sys.stdout.reconfigure(encoding="utf-8")</code>
+  <li style="text-align:left"><b>Acentuação no terminal do Windows:</b> os dois programas chamam <code>sys.stdout.reconfigure(encoding="utf-8")</code>
       para exibir os acentos corretamente.</li>
 </ul>
 
+</td></tr></tbody>
+</table>
 </body>
 </html>
