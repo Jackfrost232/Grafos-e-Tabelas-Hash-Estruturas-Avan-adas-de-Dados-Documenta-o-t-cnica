@@ -34,11 +34,24 @@ ted-02-grafos-hash/
 - Nenhuma biblioteca externa: são usados apenas módulos da biblioteca padrão
   (`re`, `argparse`, `pathlib`, `unicodedata`, `heapq`, `math`, `sys`). Não é preciso `pip install`.
 
+## Como obter e executar
+
+```powershell
+git clone https://github.com/Jackfrost232/Grafos-e-Tabelas-Hash-Estruturas-Avan-adas-de-Dados-Documenta-o-t-cnica.git ted-02-grafos-hash
+```
+
+```powershell
+cd ted-02-grafos-hash
+```
+
+Os comandos abaixo devem ser executados dentro dessa pasta.
+
 ## Parte 1 – Tabela Hash: contagem de frequências
 
 O programa lê um texto, normaliza as palavras (minúsculas, sem pontuação, números ou símbolos como º e ²)
 e conta as ocorrências em um `dict` do Python, que é uma tabela hash. Depois lista
-todas as palavras com suas frequências e mostra o ranking das mais frequentes.
+todas as palavras com suas frequências e mostra o ranking das mais frequentes. Palavras com
+hífen ou apóstrofo são contadas em partes ("guarda-chuva" vira "guarda" e "chuva").
 
 ```powershell
 python hash_frequencias.py
@@ -112,6 +125,8 @@ python grafo_dijkstra.py --conexao Horizonte Girassol 8 --origem Alvorada --dest
 | `--origem X --destino Y` | calcula o caminho mínimo (aceita nome ou número; maiúsculas não importam) |
 | `--demo` | roda vários casos, inclusive "sem caminho" e entradas inválidas (não combina com `--origem`/`--destino`) |
 | `--conexao A B KM` | adiciona uma estrada sem editar o código (aceita nome ou número, e `2,5` ou `2.5`; pode repetir; cidades novas são criadas, com aviso) |
+
+Nomes com espaço devem vir entre aspas, como em `--conexao "Cidade Nova" Girassol 8`.
 
 Para mudar o mapa de forma permanente, edite as listas `CIDADES` e `ESTRADAS` no início
 de `grafo_dijkstra.py`.
