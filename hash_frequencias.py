@@ -111,6 +111,7 @@ def exibir_consultas(frequencias, termos, ignorar_stopwords=False):
 
 
 def formatar_ocorrencias(n):
+    """Escreve a quantidade de ocorrências no singular ou no plural."""
     return f"{n} ocorrência" if n == 1 else f"{n} ocorrências"
 
 
@@ -145,13 +146,15 @@ def exibir_relatorio(frequencias, total_palavras, top=5, mostrar_todas=True):
 def decodificar(dados):
     """Converte os bytes do arquivo em texto, aceitando UTF-8, UTF-16 e ANSI (cp1252)."""
     if dados.startswith((b"\xff\xfe", b"\xfe\xff")):   # marca (BOM) do UTF-16
-        return dados.decode("utf-16")
-    if b"\x00" in dados:                                # ex.: .pdf, .docx, imagens
+        texto = dados.decode("utf-16")
+    else:
+        try:
+            texto = dados.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            texto = dados.decode("cp1252", errors="replace")   # "ANSI" do Bloco de Notas
+    if "\x00" in texto:                                # ex.: .pdf, .docx, imagens
         raise ValueError("o arquivo não parece ser um texto simples (.txt).")
-    try:
-        return dados.decode("utf-8-sig")
-    except UnicodeDecodeError:
-        return dados.decode("cp1252")                   # "ANSI" do Bloco de Notas
+    return texto
 
 
 def carregar_texto(args):
@@ -167,6 +170,7 @@ def carregar_texto(args):
 
 
 def main():
+    """Lê as opções da linha de comando, conta as palavras e mostra o relatório."""
     parser = argparse.ArgumentParser(description="Contagem de frequências com Tabela Hash.")
     entrada = parser.add_mutually_exclusive_group()   # só uma fonte de texto por vez
     entrada.add_argument("--arquivo", help="caminho de um arquivo .txt para analisar")
@@ -186,8 +190,11 @@ def main():
     except UnicodeDecodeError:   # é um tipo de ValueError, por isso vem antes
         print("Erro ao ler a entrada: não foi possível reconhecer a codificação do arquivo (salve-o em UTF-8).")
         return 1
-    except (ValueError, OSError) as erro:
+    except ValueError as erro:
         print(f"Erro ao ler a entrada: {erro}")
+        return 1
+    except OSError:
+        print("Erro ao ler a entrada: não foi possível abrir o arquivo (verifique se há permissão de leitura).")
         return 1
 
     palavras = normalizar_texto(texto)
