@@ -20,10 +20,12 @@ import heapq
 import math
 import re
 import sys
+import unicodedata
+from decimal import Decimal
 
 # Garante acentuação correta no terminal do Windows.
 if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
 # ---------------------------------------------------------------------------
@@ -98,11 +100,24 @@ def adicionar_estrada(grafo, cidade_a, cidade_b, distancia):
     grafo[cidade_b].append((cidade_a, distancia))
 
 
-def montar_mapa():
-    """Constrói o grafo do cenário padrão a partir de CIDADES e ESTRADAS."""
-    for cidade in CIDADES:
+def validar_cidades(cidades):
+    """Confere se cada cidade é um nome utilizável e se não há nomes repetidos."""
+    vistas = set()
+    for cidade in cidades:
         if not isinstance(cidade, str) or not cidade.strip():
             raise ValueError(f"Cidade {cidade!r} deve ser um nome entre aspas.")
+        if cidade != limpar_entrada(cidade):
+            raise ValueError(f"Cidade {cidade!r} tem espaço sobrando ou acento em formato incomum.")
+        if cidade.isdecimal() or cidade.lower() == "sair":
+            raise ValueError(f"Cidade {cidade!r}: números e 'sair' têm outro significado no programa.")
+        if cidade.lower() in vistas:
+            raise ValueError(f"Cidade {cidade!r} está repetida.")
+        vistas.add(cidade.lower())
+
+
+def montar_mapa():
+    """Constrói o grafo do cenário padrão a partir de CIDADES e ESTRADAS."""
+    validar_cidades(CIDADES)
     grafo = criar_grafo(CIDADES)
     for estrada in ESTRADAS:
         if len(estrada) != 3:
@@ -203,8 +218,8 @@ def menor_caminho(grafo, origem, destino):
 # ---------------------------------------------------------------------------
 
 def limpar_entrada(entrada):
-    """Remove espaços das pontas e a marca BOM que alguns terminais inserem."""
-    return entrada.replace("\ufeff", "").strip()
+    """Remove espaços das pontas e a marca BOM e unifica a forma dos acentos (NFC)."""
+    return unicodedata.normalize("NFC", entrada.replace("\ufeff", "")).strip()
 
 
 def resolver_nome_cidade(grafo, entrada):
@@ -233,6 +248,7 @@ def resolver_ou_criar_cidade(grafo, entrada):
     except KeyError as erro:
         if entrada.isdecimal():   # número fora da faixa: não vira nome de cidade
             raise ValueError(erro.args[0]) from None
+        validar_cidades([entrada])
     adicionar_cidade(grafo, entrada)
     return entrada
 
@@ -251,7 +267,8 @@ def ler_distancia(texto):
 def formatar_km(valor):
     """Formata uma distância em km, sem casas decimais desnecessárias."""
     # 12 algarismos significativos: mostra 1234567 km por inteiro e 0.1 + 0.2 como 0.3 km
-    return f"{valor:.12g} km"
+    # Decimal evita a notação científica (0.0000001 km em vez de 1e-07 km).
+    return f"{Decimal(f'{valor:.12g}'):f} km"
 
 
 def formatar_trechos(quantidade):
