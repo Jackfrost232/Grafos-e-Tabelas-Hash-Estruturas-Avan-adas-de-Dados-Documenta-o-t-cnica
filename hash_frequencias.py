@@ -19,7 +19,7 @@ from pathlib import Path
 
 # Garante acentuação correta no terminal do Windows.
 if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 ARQUIVO_PADRAO = Path(__file__).parent / "dados" / "texto_exemplo.txt"
 
@@ -128,8 +128,9 @@ def exibir_relatorio(frequencias, total_palavras, top=5, mostrar_todas=True):
 
     if mostrar_todas:
         print("\n--- Todas as palavras (ordem alfabética) ---")
+        largura = max([22] + [len(palavra) for palavra in frequencias])
         for palavra in sorted(frequencias, key=chave_alfabetica):
-            print(f"  {palavra:<22} {formatar_ocorrencias(frequencias[palavra])}")
+            print(f"  {palavra:<{largura}} {formatar_ocorrencias(frequencias[palavra])}")
 
     ranking = mais_frequentes(frequencias, top)
     print(f"\n--- Top {len(ranking)} palavras mais frequentes ---")
@@ -138,8 +139,9 @@ def exibir_relatorio(frequencias, total_palavras, top=5, mostrar_todas=True):
             print("  (aviso: só existe 1 palavra distinta)")
         else:
             print(f"  (aviso: só existem {len(frequencias)} palavras distintas)")
+    largura = max([20] + [len(palavra) for palavra, _ in ranking])
     for posicao, (palavra, quantidade) in enumerate(ranking, start=1):
-        print(f"  {posicao:>2}º {palavra:<20} {formatar_ocorrencias(quantidade)}")
+        print(f"  {posicao:>2}º {palavra:<{largura}} {formatar_ocorrencias(quantidade)}")
     print("=" * 60)
 
 
