@@ -1,0 +1,17 @@
+﻿============================================================
+ CONTAGEM DE FREQUÊNCIAS COM TABELA HASH (dict)
+============================================================
+Total de palavras no texto   : 6
+Palavras distintas (chaves)  : 3
+
+--- Todas as palavras (ordem alfabética) ---
+  dados                  3 ocorrências
+  estrutura              2 ocorrências
+  grafo                  1 ocorrência
+
+--- Top 3 palavras mais frequentes ---
+  (aviso: só existem 3 palavras distintas)
+   1º dados                3 ocorrências
+   2º estrutura            2 ocorrências
+   3º grafo                1 ocorrência
+============================================================

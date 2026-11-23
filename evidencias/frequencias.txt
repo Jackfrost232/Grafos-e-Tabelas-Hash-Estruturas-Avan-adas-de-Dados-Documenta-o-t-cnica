@@ -1,0 +1,24 @@
+﻿============================================================
+ CONTAGEM DE FREQUÊNCIAS COM TABELA HASH (dict)
+============================================================
+Total de palavras no texto   : 908
+Contabilizadas (sem stopwords): 516
+Palavras distintas (chaves)  : 313
+
+--- Top 10 palavras mais frequentes ---
+   1º vértice              12 ocorrências
+   2º dados                10 ocorrências
+   3º hash                 8 ocorrências
+   4º arestas              7 ocorrências
+   5º distância            7 ocorrências
+   6º estrutura            7 ocorrências
+   7º guarda               7 ocorrências
+   8º lista                7 ocorrências
+   9º tabela               7 ocorrências
+  10º caminho              6 ocorrências
+============================================================
+
+--- Consultas diretas na Tabela Hash ---
+  'hash': 8 ocorrências
+  'grafo': 5 ocorrências
+  'dijkstra': 3 ocorrências
