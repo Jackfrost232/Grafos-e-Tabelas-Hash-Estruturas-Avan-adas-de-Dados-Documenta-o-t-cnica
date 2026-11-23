@@ -105,7 +105,7 @@ def exibir_lista_adjacencia(grafo):
     print(" MAPA (LISTA DE ADJACÊNCIA)  -  cidade -> [(vizinho, km), ...]")
     print("=" * 64)
     for numero, (cidade, vizinhos) in enumerate(grafo.items(), start=1):
-        texto = ", ".join(f"{v} ({d} km)" for v, d in vizinhos) or "(sem ligações)"
+        texto = ", ".join(f"{v} ({formatar_km(d)})" for v, d in vizinhos) or "(sem ligações)"
         print(f"  {numero}. {cidade:<10} -> {texto}")
     total_arestas = sum(len(v) for v in grafo.values()) // 2
     print(f"\n  {len(grafo)} cidades, {total_arestas} estradas (mão dupla)")
@@ -183,11 +183,16 @@ def menor_caminho(grafo, origem, destino):
 # 4. Interface (entrada/saída)
 # ---------------------------------------------------------------------------
 
+def limpar_entrada(entrada):
+    """Remove espaços das pontas e a marca BOM que alguns terminais inserem."""
+    return entrada.replace("\ufeff", "").strip()
+
+
 def resolver_nome_cidade(grafo, entrada):
     """Aceita o nome (sem diferenciar maiúsculas/minúsculas) ou o número da cidade."""
-    entrada = entrada.strip().lstrip("﻿")   # remove BOM que alguns terminais inserem
+    entrada = limpar_entrada(entrada)
     cidades = list(grafo)
-    if entrada.isdigit():
+    if entrada.isdecimal():   # isdecimal, e não isdigit: "²" é dígito, mas int("²") falha
         indice = int(entrada) - 1
         if 0 <= indice < len(cidades):
             return cidades[indice]
@@ -198,8 +203,27 @@ def resolver_nome_cidade(grafo, entrada):
     raise KeyError(f"Cidade '{entrada}' não existe no mapa.")
 
 
+def resolver_ou_criar_cidade(grafo, entrada):
+    """Usada em --conexao: aceita nome ou número existente; um nome novo cria a cidade."""
+    entrada = limpar_entrada(entrada)
+    if not entrada:
+        raise ValueError("o nome da cidade não pode ficar vazio.")
+    try:
+        return resolver_nome_cidade(grafo, entrada)
+    except KeyError as erro:
+        if entrada.isdecimal():   # número fora da faixa: não vira nome de cidade
+            raise ValueError(erro.args[0]) from None
+    adicionar_cidade(grafo, entrada)
+    return entrada
+
+
 def formatar_km(valor):
-    return f"{valor:g} km"
+    # 12 algarismos significativos: mostra 1234567 km por inteiro e 0.1 + 0.2 como 0.3 km
+    return f"{valor:.12g} km"
+
+
+def formatar_trechos(quantidade):
+    return "1 trecho" if quantidade == 1 else f"{quantidade} trechos"
 
 
 def exibir_resultado(grafo, origem, destino):
@@ -220,7 +244,7 @@ def exibir_resultado(grafo, origem, destino):
         # Se houver mais de uma estrada entre as duas cidades, Dijkstra usa a mais curta.
         peso = min(d for v, d in grafo[atual] if v == proxima)
         print(f"  {atual:<10} -> {proxima:<10} {formatar_km(peso):>7}")
-    print(f"Distância total: {formatar_km(distancia)}  ({len(caminho) - 1} trechos)")
+    print(f"Distância total: {formatar_km(distancia)}  ({formatar_trechos(len(caminho) - 1)})")
 
 
 def menu_interativo(grafo):
@@ -228,10 +252,10 @@ def menu_interativo(grafo):
     print("Digite o nome ou o número da cidade. Deixe em branco (ou 'sair') para encerrar.")
     while True:
         try:
-            entrada_origem = input("\nOrigem : ").strip()
+            entrada_origem = limpar_entrada(input("\nOrigem : "))
             if entrada_origem.lower() in ("", "sair"):
                 break
-            entrada_destino = input("Destino: ").strip()
+            entrada_destino = limpar_entrada(input("Destino: "))
             if entrada_destino.lower() in ("", "sair"):
                 break
             origem = resolver_nome_cidade(grafo, entrada_origem)
@@ -239,6 +263,7 @@ def menu_interativo(grafo):
             exibir_resultado(grafo, origem, destino)
         except KeyError as erro:
             print(f"Erro: {erro.args[0]}")
+            print("Cidades disponíveis: " + ", ".join(grafo))
         except (EOFError, KeyboardInterrupt):
             print()
             break
@@ -278,18 +303,15 @@ def main():
     # Ligações extras informadas na linha de comando.
     for cidade_a, cidade_b, km in args.conexao or []:
         try:
-            distancia = float(km)
+            distancia = float(km.replace(",", "."))   # aceita 2,5 ou 2.5
             if distancia.is_integer():
                 distancia = int(distancia)   # mostra "8 km" em vez de "8.0 km"
         except ValueError:
             print(f"Erro ao adicionar estrada: distância '{km}' não é um número.")
             return 1
-        # Se o nome já existe (ignorando maiúsculas), reaproveita a cidade existente.
-        cidade_a = next((c for c in grafo if c.lower() == cidade_a.lower()), cidade_a)
-        cidade_b = next((c for c in grafo if c.lower() == cidade_b.lower()), cidade_b)
         try:
-            adicionar_cidade(grafo, cidade_a)
-            adicionar_cidade(grafo, cidade_b)
+            cidade_a = resolver_ou_criar_cidade(grafo, cidade_a)
+            cidade_b = resolver_ou_criar_cidade(grafo, cidade_b)
             adicionar_estrada(grafo, cidade_a, cidade_b, distancia)
             print(f"Estrada adicionada: {cidade_a} <-> {cidade_b} ({formatar_km(distancia)})")
         except ValueError as erro:
