@@ -2,7 +2,7 @@
 
 **Disciplina:** Estruturas Avançadas de Dados
 **Atividade:** TED 02
-**Aluno:** _[SEU NOME COMPLETO]_ – Matrícula _[SUA MATRÍCULA]_ (trabalho realizado individualmente)
+**Aluno:** Pedro Paulo Teixeira de Araújo (trabalho realizado individualmente)
 **Entrega:** 25/11/2026
 
 ---
