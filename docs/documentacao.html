@@ -54,7 +54,7 @@ cidades e a distância, e avisar quando não existir rota.</p>
 <ol>
   <li><b>Entrada:</b> arquivo (<code>--arquivo</code>), texto direto (<code>--texto</code>) ou o arquivo de exemplo.</li>
   <li><b>Normalização</b> (<code>normalizar_texto</code>): tudo em minúsculas e extração apenas de sequências de
-      letras com a expressão regular <code>[^\W\d_]+</code>. Isso remove pontuação e números e mantém os acentos.
+      letras com a expressão regular <code>[^\W\d_]+</code>. Remove pontuação e números e mantém acentos (NFC).
       Assim, "Dados," e "dados" viram a mesma chave.</li>
   <li><b>Contagem</b> (<code>contar_frequencias</code>): um <code>dict</code> em que a chave é a palavra e o valor é o contador.
 <pre>frequencias = {}
@@ -161,7 +161,7 @@ Ela também entrega direto os vizinhos de cada cidade, que é a operação que o
 <h2>4. Parte 2 – Caminho mínimo com Dijkstra</h2>
 <h3>4.1 Funcionamento (<code>dijkstra</code>)</h3>
 <ol>
-  <li>Todas as distâncias começam em ∞, exceto a da origem, que começa em 0. O dicionário <code>anteriores</code> começa vazio (<code>None</code>).</li>
+  <li>Todas as distâncias começam em ∞, exceto a da origem, que começa em 0. O dicionário <code>anteriores</code> começa com <code>None</code> para todas as cidades.</li>
   <li>Uma <b>fila de prioridade</b> (<code>heapq</code>) entrega sempre a cidade não finalizada com a menor distância provisória.</li>
   <li>Para cada vizinho, o algoritmo faz o <b>relaxamento</b>: se <code>dist[atual] + peso &lt; dist[vizinho]</code>,
       atualiza a distância do vizinho, registra <code>anteriores[vizinho] = atual</code> e coloca o vizinho no heap.</li>
@@ -219,18 +219,18 @@ cidades, porque não depende de uma matriz V × V.</p>
       redimensionamento) está explicado na seção 2.2.</li>
   <li><b>Normalização com acentos:</b> uma regex como <code>[a-z]+</code> quebraria "distância" em "dist" e "ncia".
       Por isso usamos <code>[^\W\d_]+</code>, que reconhece letras Unicode.</li>
-  <li><b>Empates no ranking:</b> sem um critério de desempate, a ordem poderia variar entre execuções. Desempatar em ordem
-      alfabética deixa a saída reprodutível.</li>
+  <li><b>Empates no ranking:</b> sem um critério de desempate, a ordem dependeria de qual palavra aparece primeiro no texto.
+      Desempatar em ordem alfabética torna o ranking independente disso.</li>
   <li><b>Dijkstra implementado à mão</b> com <code>heapq</code>, sem bibliotecas de grafos, para deixar visíveis o
       relaxamento e a fila de prioridade. O heap do Python não tem a operação "diminuir chave", então a solução foi
       inserir uma nova entrada e descartar as antigas com o conjunto <code>visitadas</code> (<i>lazy deletion</i>).</li>
   <li><b>Caso sem caminho:</b> a cidade isolada <i>Horizonte</i> foi incluída de propósito. O algoritmo identifica o caso
       pela distância que continua ∞, e a reconstrução também verifica se o caminho realmente começa na origem.</li>
   <li><b>Alterações durante a avaliação:</b> a opção <code>--conexao</code> adiciona estradas, e até cidades novas, sem
-      editar o código. Origem e destino aceitam nome ou número, sem diferenciar maiúsculas e minúsculas. Para a Parte 1,
-      <code>--arquivo</code> e <code>--texto</code> permitem usar qualquer texto.</li>
+      editar o código. Origem, destino e <code>--conexao</code> aceitam nome ou número, sem diferenciar maiúsculas e minúsculas. Para a Parte 1,
+      <code>--arquivo</code> e <code>--texto</code> permitem usar outros textos (UTF-8, UTF-16 ou ANSI).</li>
   <li><b>Validação de entradas:</b> pesos zero, negativos ou não numéricos e estradas de uma cidade para ela mesma são
-      rejeitados, porque o Dijkstra exige pesos não negativos. Cidades inexistentes, arquivos ausentes e textos sem
+      rejeitados. O Dijkstra exige pesos não negativos, e o enunciado pede pesos positivos. Cidades inexistentes, arquivos ausentes e textos sem
       palavras geram mensagens claras em vez de erros do Python.</li>
   <li style="text-align:left"><b>Acentuação no terminal do Windows:</b> os dois programas chamam <code>sys.stdout.reconfigure(encoding="utf-8")</code>
       para exibir os acentos corretamente.</li>
