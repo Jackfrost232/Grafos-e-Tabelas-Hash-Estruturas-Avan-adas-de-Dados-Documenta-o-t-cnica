@@ -14,6 +14,7 @@ Uso:
 import argparse
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 # Garante acentuação correta no terminal do Windows.
@@ -38,9 +39,11 @@ def normalizar_texto(texto):
 
     - transforma tudo em minúsculas ("Dados" e "dados" viram a mesma chave);
     - remove pontuação e números, mantendo apenas sequências de letras
-      (letras acentuadas são preservadas: "estrutura", "árvore", "função").
+      (letras acentuadas são preservadas: "estrutura", "árvore", "função");
+    - unifica a forma dos acentos (NFC): "é" pode vir como um único caractere ou
+      como "e" + acento, o que acontece em textos copiados de PDF ou do Mac.
     """
-    texto = texto.lower()
+    texto = unicodedata.normalize("NFC", texto).lower()
     # [^\W\d_]+  = uma ou mais "letras" (caractere de palavra que não é dígito nem "_")
     return re.findall(r"[^\W\d_]+", texto)
 
@@ -73,11 +76,22 @@ def mais_frequentes(frequencias, quantidade=5):
 
 
 def consultar(frequencias, palavra):
-    """Consulta a frequência de uma palavra: acesso direto pela chave, O(1) em média."""
-    chave = normalizar_texto(palavra)
-    if not chave:
-        return 0
-    return frequencias.get(chave[0], 0)
+    """Consulta a frequência de uma palavra já normalizada: acesso direto pela chave, O(1) em média."""
+    return frequencias.get(palavra, 0)
+
+
+def exibir_consultas(frequencias, termos, ignorar_stopwords=False):
+    """Mostra a frequência de cada palavra buscada; uma frase é consultada palavra por palavra."""
+    print("\n--- Consultas diretas na Tabela Hash ---")
+    for termo in termos:
+        palavras = normalizar_texto(termo)
+        if not palavras:
+            print(f"  '{termo}': não contém nenhuma palavra para buscar")
+        for palavra in palavras:
+            if ignorar_stopwords and palavra in STOPWORDS:
+                print(f"  '{palavra}': não contada (stopword)")
+            else:
+                print(f"  '{palavra}': {formatar_ocorrencias(consultar(frequencias, palavra))}")
 
 
 def formatar_ocorrencias(n):
@@ -103,26 +117,44 @@ def exibir_relatorio(frequencias, total_palavras, top=5, mostrar_todas=True):
     ranking = mais_frequentes(frequencias, top)
     print(f"\n--- Top {len(ranking)} palavras mais frequentes ---")
     if len(frequencias) < top:
-        print(f"  (aviso: só existem {len(frequencias)} palavras distintas)")
+        if len(frequencias) == 1:
+            print("  (aviso: só existe 1 palavra distinta)")
+        else:
+            print(f"  (aviso: só existem {len(frequencias)} palavras distintas)")
     for posicao, (palavra, quantidade) in enumerate(ranking, start=1):
         print(f"  {posicao:>2}º {palavra:<20} {formatar_ocorrencias(quantidade)}")
     print("=" * 60)
+
+
+def decodificar(dados):
+    """Converte os bytes do arquivo em texto, aceitando UTF-8, UTF-16 e ANSI (cp1252)."""
+    if dados.startswith((b"\xff\xfe", b"\xfe\xff")):   # marca (BOM) do UTF-16
+        return dados.decode("utf-16")
+    if b"\x00" in dados:                                # ex.: .pdf, .docx, imagens
+        raise ValueError("o arquivo não parece ser um texto simples (.txt).")
+    try:
+        return dados.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return dados.decode("cp1252")                   # "ANSI" do Bloco de Notas
 
 
 def carregar_texto(args):
     """Obtém o texto a partir dos argumentos, tratando erros de entrada."""
     if args.texto is not None:
         return args.texto
+    if args.arquivo is not None and not args.arquivo.strip():
+        raise ValueError("o caminho do arquivo está vazio.")
     caminho = Path(args.arquivo) if args.arquivo else ARQUIVO_PADRAO
     if not caminho.is_file():
-        raise FileNotFoundError(f"Arquivo não encontrado: {caminho}")
-    return caminho.read_text(encoding="utf-8")
+        raise ValueError(f"arquivo não encontrado: {caminho}")
+    return decodificar(caminho.read_bytes())
 
 
 def main():
     parser = argparse.ArgumentParser(description="Contagem de frequências com Tabela Hash.")
-    parser.add_argument("--arquivo", help="caminho de um arquivo .txt (UTF-8) para analisar")
-    parser.add_argument("--texto", help="texto informado diretamente na linha de comando")
+    entrada = parser.add_mutually_exclusive_group()   # só uma fonte de texto por vez
+    entrada.add_argument("--arquivo", help="caminho de um arquivo .txt para analisar")
+    entrada.add_argument("--texto", help="texto informado diretamente na linha de comando")
     parser.add_argument("--top", type=int, default=5, help="quantas palavras mostrar no ranking (padrão 5)")
     parser.add_argument("--sem-stopwords", action="store_true", help="ignora palavras muito comuns")
     parser.add_argument("--resumo", action="store_true", help="não lista todas as palavras, só o ranking")
@@ -135,7 +167,10 @@ def main():
 
     try:
         texto = carregar_texto(args)
-    except (FileNotFoundError, UnicodeDecodeError) as erro:
+    except UnicodeDecodeError:   # é um tipo de ValueError, por isso vem antes
+        print("Erro ao ler a entrada: não foi possível reconhecer a codificação do arquivo (salve-o em UTF-8).")
+        return 1
+    except (ValueError, OSError) as erro:
         print(f"Erro ao ler a entrada: {erro}")
         return 1
 
@@ -152,9 +187,7 @@ def main():
     exibir_relatorio(frequencias, len(palavras), top=args.top, mostrar_todas=not args.resumo)
 
     if args.buscar:
-        print("\n--- Consultas diretas na Tabela Hash ---")
-        for palavra in args.buscar:
-            print(f"  '{palavra}': {formatar_ocorrencias(consultar(frequencias, palavra))}")
+        exibir_consultas(frequencias, args.buscar, ignorar_stopwords=args.sem_stopwords)
     return 0
 
 
