@@ -33,6 +33,13 @@ STOPWORDS = {
     "este", "esta", "quando", "entre", "cada", "já", "não", "muito", "pode", "ser",
 }
 
+# Símbolos que o Python trata como letra ou número, mas não formam palavras: 1º, 2ª, m², H₂O, ½.
+SIMBOLOS = re.compile("[ºª¹²³¼½¾⁰-⁹₀-₉]")
+
+# Caracteres invisíveis que partiriam uma palavra em duas: hífen opcional (comum em PDFs),
+# marcas de junção e BOM. Mapeados para None, são apagados por str.translate.
+INVISIVEIS = dict.fromkeys((0x00AD, 0x200C, 0x200D, 0x2060, 0xFEFF))
+
 
 def normalizar_texto(texto):
     """Converte o texto em uma lista de palavras normalizadas.
@@ -43,7 +50,9 @@ def normalizar_texto(texto):
     - unifica a forma dos acentos (NFC): "é" pode vir como um único caractere ou
       como "e" + acento, o que acontece em textos copiados de PDF ou do Mac.
     """
+    texto = texto.translate(INVISIVEIS)
     texto = unicodedata.normalize("NFC", texto).lower()
+    texto = SIMBOLOS.sub(" ", texto)
     # [^\W\d_]+  = uma ou mais "letras" (caractere de palavra que não é dígito nem "_")
     return re.findall(r"[^\W\d_]+", texto)
 
@@ -65,13 +74,20 @@ def contar_frequencias(palavras, ignorar_stopwords=False):
     return frequencias
 
 
+def chave_alfabetica(palavra):
+    """Chave de ordenação que ignora acentos: "água" fica junto do "a", e não depois do "z"."""
+    decomposta = unicodedata.normalize("NFD", palavra)
+    sem_acentos = "".join(c for c in decomposta if not unicodedata.combining(c))
+    return (sem_acentos, palavra)
+
+
 def mais_frequentes(frequencias, quantidade=5):
     """Retorna as `quantidade` palavras mais frequentes.
 
     Ordena por frequência decrescente; em caso de empate, por ordem alfabética,
     para que o resultado seja sempre o mesmo. Custo O(k log k), k = palavras distintas.
     """
-    itens = sorted(frequencias.items(), key=lambda item: (-item[1], item[0]))
+    itens = sorted(frequencias.items(), key=lambda item: (-item[1], chave_alfabetica(item[0])))
     return itens[:quantidade]
 
 
@@ -111,7 +127,7 @@ def exibir_relatorio(frequencias, total_palavras, top=5, mostrar_todas=True):
 
     if mostrar_todas:
         print("\n--- Todas as palavras (ordem alfabética) ---")
-        for palavra in sorted(frequencias):
+        for palavra in sorted(frequencias, key=chave_alfabetica):
             print(f"  {palavra:<22} {formatar_ocorrencias(frequencias[palavra])}")
 
     ranking = mais_frequentes(frequencias, top)
