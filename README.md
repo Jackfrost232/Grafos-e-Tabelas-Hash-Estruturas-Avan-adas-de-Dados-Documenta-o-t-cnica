@@ -1,9 +1,9 @@
 # TED 02 – Modelagem e Resolução Prática de Problemas com Grafos e Tabelas Hash
 
-**Disciplina:** Estruturas Avançadas de Dados
-**Atividade:** TED 02
-**Integrantes da dupla:** Pedro Paulo Teixeira de Araújo; Rafael Pontara
-**Entrega:** 25/11/2026
+- **Disciplina:** Estruturas Avançadas de Dados
+- **Atividade:** TED 02
+- **Integrantes da dupla:** Pedro Paulo Teixeira de Araújo; Rafael Pontara
+- **Entrega:** 25/11/2026
 
 ---
 
@@ -16,7 +16,7 @@ ted-02-grafos-hash/
 ├── grafo_dijkstra.py            # Parte 2 – Grafo (lista de adjacência) + Dijkstra
 ├── dados/
 │   └── texto_exemplo.txt        # texto de ~900 palavras usado na Parte 1
-├── evidencias/                  # capturas (.png) e saídas completas (.txt)
+├── evidencias/                  # imagens (.png) geradas das saídas e saídas em .txt
 │   ├── frequencias.png
 │   ├── frequencias_exemplo_enunciado.png
 │   ├── caminho_minimo.png
@@ -30,9 +30,9 @@ ted-02-grafos-hash/
 
 ## Dependências
 
-- **Python 3.8 ou superior.**
+- **Python 3.8 ou superior** (testado no Python 3.11).
 - Nenhuma biblioteca externa: são usados apenas módulos da biblioteca padrão
-  (`re`, `argparse`, `pathlib`, `heapq`, `math`, `sys`). Não é preciso `pip install`.
+  (`re`, `argparse`, `pathlib`, `unicodedata`, `heapq`, `math`, `sys`). Não é preciso `pip install`.
 
 ## Parte 1 – Tabela Hash: contagem de frequências
 
@@ -46,12 +46,12 @@ python hash_frequencias.py
 
 | Opção | O que faz |
 |---|---|
-| `--arquivo caminho.txt` | analisa outro arquivo de texto (UTF-8) |
-| `--texto "..."` | analisa um texto digitado na linha de comando |
+| `--arquivo caminho.txt` | analisa outro arquivo de texto (UTF-8, UTF-16 ou ANSI) |
+| `--texto "..."` | analisa um texto digitado na linha de comando (não combina com `--arquivo`) |
 | `--top N` | quantidade de palavras no ranking (padrão: 5) |
 | `--sem-stopwords` | ignora palavras muito comuns (artigos, preposições...) |
 | `--resumo` | mostra só o ranking, sem a lista completa |
-| `--buscar p1 p2 ...` | consulta diretamente a frequência de palavras |
+| `--buscar p1 p2 ...` | consulta diretamente a frequência de palavras (uma frase é consultada palavra por palavra) |
 
 Exemplo do enunciado:
 
@@ -111,7 +111,7 @@ python grafo_dijkstra.py --conexao Horizonte Girassol 8 --origem Alvorada --dest
 |---|---|
 | `--origem X --destino Y` | calcula o caminho mínimo (aceita nome ou número; maiúsculas não importam) |
 | `--demo` | roda vários casos, inclusive "sem caminho" e entradas inválidas |
-| `--conexao A B KM` | adiciona uma estrada sem editar o código (pode repetir; cidades novas são criadas) |
+| `--conexao A B KM` | adiciona uma estrada sem editar o código (aceita nome ou número, e `2,5` ou `2.5`; pode repetir; cidades novas são criadas) |
 
 Para mudar o mapa de forma permanente, edite as listas `CIDADES` e `ESTRADAS` no início
 de `grafo_dijkstra.py`.
@@ -125,7 +125,7 @@ de `grafo_dijkstra.py`.
 | Alvorada | Dunas | Alvorada → Cascata → Dunas | **20 km** |
 | Alvorada | Horizonte | — | **não existe caminho** |
 
-No primeiro caso, a rota direta Alvorada → Floresta → Esmeralda tem só 2 trechos, mas soma
+No primeiro caso, a rota Alvorada → Floresta → Esmeralda tem só 2 trechos, mas soma
 23 km. Dijkstra escolhe a rota com 3 trechos e 20 km, porque considera os **pesos** das
 estradas e não a quantidade de conexões.
 
@@ -135,7 +135,7 @@ estradas e não a quantidade de conexões.
 - Origem igual ao destino: distância 0.
 - Destino inalcançável: "Não existe caminho entre X e Y".
 - Estrada com distância zero, negativa ou não numérica, ou ligando uma cidade a ela mesma: rejeitada.
-- Na Parte 1: arquivo inexistente, texto sem palavras e `--top` inválido.
+- Na Parte 1: arquivo inexistente ou que não é texto, texto sem palavras e `--top` inválido.
 
 ## Evidências de execução
 
