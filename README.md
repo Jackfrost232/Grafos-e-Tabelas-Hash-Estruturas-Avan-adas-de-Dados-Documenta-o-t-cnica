@@ -2,7 +2,7 @@
 
 **Disciplina:** Estruturas Avançadas de Dados
 **Atividade:** TED 02
-**Aluno:** Pedro Paulo Teixeira de Araújo (trabalho realizado individualmente)
+**Integrantes da dupla:** Pedro Paulo Teixeira de Araújo; Rafael Pontara
 **Entrega:** 25/11/2026
 
 ---
@@ -24,7 +24,8 @@ ted-02-grafos-hash/
 │   └── *.txt
 └── docs/
     ├── documentacao.pdf         # documentação técnica
-    └── documentacao.html        # fonte da documentação
+    ├── documentacao.html        # fonte da documentação
+    └── banner.png               # banner usado na documentação
 ```
 
 ## Dependências
