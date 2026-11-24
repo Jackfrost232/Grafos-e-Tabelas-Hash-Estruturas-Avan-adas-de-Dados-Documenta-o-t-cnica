@@ -32,7 +32,7 @@ ted-02-grafos-hash/
 
 - **Python 3.8 ou superior** (testado no Python 3.11).
 - Nenhuma biblioteca externa: são usados apenas módulos da biblioteca padrão
-  (`re`, `argparse`, `pathlib`, `unicodedata`, `heapq`, `math`, `decimal`, `sys`). Não é preciso `pip install`.
+  (`re`, `os`, `argparse`, `pathlib`, `unicodedata`, `heapq`, `math`, `decimal`, `sys`). Não é preciso `pip install`.
 
 ## Como obter e executar
 
@@ -71,7 +71,7 @@ python hash_frequencias.py
 | `--top N` | quantidade de palavras no ranking (padrão: 5) |
 | `--sem-stopwords` | ignora palavras muito comuns (artigos, preposições...) |
 | `--resumo` | mostra só o ranking, sem a lista completa |
-| `--buscar p1 p2 ...` | consulta diretamente a frequência de palavras (uma frase é consultada palavra por palavra) |
+| `--buscar p1 p2 ...` | consulta diretamente a frequência de palavras (uma frase é consultada palavra por palavra; acentos fazem diferença) |
 
 Exemplo do enunciado:
 
