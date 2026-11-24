@@ -18,6 +18,7 @@ Uso:
 import argparse
 import heapq
 import math
+import os
 import re
 import sys
 import unicodedata
@@ -410,4 +411,11 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        codigo = main()
+        sys.stdout.flush()
+    except OSError:
+        # A saída foi fechada antes do fim (ex.: "| more" interrompido): encerra sem mostrar erro.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        codigo = 1
+    sys.exit(codigo)
