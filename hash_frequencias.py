@@ -12,6 +12,7 @@ Uso:
 """
 
 import argparse
+import os
 import re
 import sys
 import unicodedata
@@ -33,8 +34,8 @@ STOPWORDS = {
     "este", "esta", "quando", "entre", "cada", "já", "não", "muito", "pode", "ser",
 }
 
-# Símbolos que o Python trata como letra ou número, mas não formam palavras: 1º, 2ª, m², H₂O, ½.
-SIMBOLOS = re.compile("[ºª¹²³¼½¾⁰-⁹₀-₉]")
+# Símbolos que o Python trata como letra ou número, mas não formam palavras: 1º, 2ª, m², H₂O, ½, ①.
+SIMBOLOS = re.compile("[ºª¹²³¼½¾⁰⁴-⁹₀-₉⅐-⅟↉①-⓿❶-➓]")
 
 # Caracteres invisíveis que partiriam uma palavra em duas: hífen opcional (comum em PDFs),
 # marcas de junção e BOM. Mapeados para None, são apagados por str.translate.
@@ -217,4 +218,11 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        codigo = main()
+        sys.stdout.flush()
+    except OSError:
+        # A saída foi fechada antes do fim (ex.: "| more" interrompido): encerra sem mostrar erro.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        codigo = 1
+    sys.exit(codigo)
