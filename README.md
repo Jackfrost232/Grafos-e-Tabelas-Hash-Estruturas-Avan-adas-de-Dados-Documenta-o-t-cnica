@@ -2,7 +2,7 @@
 
 - **Disciplina:** Estruturas Avançadas de Dados
 - **Atividade:** TED 02
-- **Integrantes da dupla:** Pedro Paulo Teixeira de Araújo; Rafael Pontara
+- **Integrantes da dupla:** Pedro Paulo Teixeira de Araújo e Rafael Pontara
 - **Entrega:** 25/11/2026
 
 ---
